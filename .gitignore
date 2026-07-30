@@ -47,3 +47,4 @@ htmlcov/
 # Temporary files
 *.tmp
 .cache/
+.venv/

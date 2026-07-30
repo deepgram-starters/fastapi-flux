@@ -6,6 +6,7 @@ repository = "https://github.com/deepgram-starters/fastapi-flux"
 useCase = "flux"
 language = "python"
 framework = "fastapi"
+sdk = "deepgram-sdk"
 tags = ["flux", "streaming", "speech-to-text", "real-time", "turn-detection", "fastapi", "python"]
 
 [check]
