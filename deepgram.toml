@@ -10,7 +10,7 @@ sdk = "deepgram-sdk"
 tags = ["flux", "streaming", "speech-to-text", "real-time", "turn-detection", "fastapi", "python"]
 
 [check]
-command = ["git --version", "python3 --version"]
+command = ["git --version", "python3 --version", "python3 -c \"import sys; sys.exit(0 if sys.version_info >= (3, 10) else 'deepgram-sdk 7.x requires Python 3.10+')\""]
 message = "All prerequisites installed"
 
 [install.pre]

@@ -8,6 +8,11 @@ Click the button below to fork the repo:
 
 [![Fork on GitHub](https://img.shields.io/badge/Fork_on_GitHub-blue?logo=github)](https://github.com/deepgram-starters/fastapi-flux/fork)
 
+## Prerequisites
+
+- **Python 3.10+** — required by `deepgram-sdk` 7.x
+- Git
+
 ## Local Development
 
 ### Makefile (Recommended)
