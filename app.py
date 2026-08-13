@@ -28,6 +28,7 @@ import toml
 from deepgram import AsyncDeepgramClient
 from deepgram.environment import DeepgramClientEnvironment
 from deepgram.listen.v2.types import ListenV2CloseStream
+from deepgram.core.api_error import ApiError
 
 load_dotenv(override=False)
 
@@ -218,11 +219,17 @@ async def flux(websocket: WebSocket):
                 except asyncio.CancelledError:
                     pass
                 except Exception as e:
-                    print(f"Error forwarding from Deepgram: {e}")
+                    # Sanitized mid-stream error. Never surface str(e): an
+                    # ApiError's string form embeds the Authorization: Token
+                    # <key> header (deepgram-sdk 7.6.0).
+                    detail = (f"Deepgram stream error (HTTP {e.status_code})"
+                              if isinstance(e, ApiError) else
+                              f"Deepgram stream error ({type(e).__name__})")
+                    print(f"Error forwarding from Deepgram: {detail}")
                     try:
                         await websocket.send_text(json.dumps({
                             "type": "Error",
-                            "description": str(e),
+                            "description": detail,
                             "code": "PROVIDER_ERROR"
                         }))
                     except Exception:
@@ -258,7 +265,10 @@ async def flux(websocket: WebSocket):
             except WebSocketDisconnect:
                 print("Client disconnected")
             except Exception as e:
-                print(f"Error forwarding to Deepgram: {e}")
+                # Sanitized log; str(e) may embed the API key for an ApiError.
+                detail = (f"Deepgram error (HTTP {e.status_code})"
+                          if isinstance(e, ApiError) else type(e).__name__)
+                print(f"Error forwarding to Deepgram: {detail}")
             finally:
                 forward_task.cancel()
                 try:
@@ -267,11 +277,17 @@ async def flux(websocket: WebSocket):
                     pass
 
     except Exception as e:
-        print(f"WebSocket error: {e}")
+        # Sanitized connect error. Never surface str(e): an ApiError's string
+        # form embeds the Authorization: Token <key> header (deepgram-sdk 7.6.0),
+        # which would otherwise reach both the server log and the browser.
+        detail = (f"Deepgram rejected the connection (HTTP {e.status_code})"
+                  if isinstance(e, ApiError) else
+                  f"Failed to connect to Deepgram ({type(e).__name__})")
+        print(f"WebSocket error: {detail}")
         try:
             await websocket.send_text(json.dumps({
                 "type": "Error",
-                "description": str(e),
+                "description": detail,
                 "code": "CONNECTION_FAILED"
             }))
         except Exception:
